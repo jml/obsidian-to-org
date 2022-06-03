@@ -1,0 +1,19 @@
+[tool.poetry]
+name = "obsidian-to-org"
+version = "0.1.0"
+description = "Convert Obsidian Markdown files to org-roam"
+authors = ["Jonathan Lange <jml@mumak.net>"]
+readme = "README.md"
+
+[tool.poetry.scripts]
+obsidian-to-org = "obsidian_to_org.__main__:main"
+
+[tool.poetry.dependencies]
+python = "^3.10"
+
+[tool.poetry.dev-dependencies]
+pytest = "^7.1.2"
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
