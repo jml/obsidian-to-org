@@ -16,7 +16,8 @@ def convert_file(markdown_contents):
         markdown_file.flush()
 
         with tempfile.TemporaryDirectory() as output_dir:
-            org_file = convert_markdown_file(Path(markdown_file.name), Path(output_dir))
+            org_file = Path(output_dir) / "example.org"
+            convert_markdown_file(Path(markdown_file.name), org_file)
             return org_file.read_text()
 
 

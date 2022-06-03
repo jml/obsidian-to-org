@@ -54,9 +54,7 @@ def fix_links(org_contents):
     return org_contents
 
 
-def convert_markdown_file(md_file, output_dir):
-    org_file = (output_dir / md_file.stem).with_suffix(".org")
-
+def convert_markdown_file(md_file, org_file):
     markdown_contents = prepare_markdown_text(md_file.read_text())
 
     # Convert from md to org
@@ -80,7 +78,6 @@ def convert_markdown_file(md_file, output_dir):
     org_contents = restore_comments(org_contents)
     org_contents = fix_links(org_contents)
     org_file.write_text(org_contents)
-    return org_file
 
 
 def walk_directory(path):
@@ -101,8 +98,9 @@ def single_file():
     if not output_dir.is_dir():
         output_dir.mkdir()
 
-    org_file = convert_markdown_file(md_file, output_dir)
-    print(f"Converted {org_file}")
+    org_file = (output_dir / md_file.stem).with_suffix(".org")
+    convert_markdown_file(md_file, org_file)
+    print(f"Converted {md_file} to {org_file}")
 
 
 def convert_directory():
@@ -111,13 +109,17 @@ def convert_directory():
     parser.add_argument("output_directory", type=pathlib.Path, help="The directory to put the org files in")
     args = parser.parse_args()
 
+    markdown_directory = args.markdown_directory.resolve()
+
     if not args.output_directory.is_dir():
         args.output_directory.mkdir()
 
-    for path in walk_directory(args.markdown_directory):
+    for path in walk_directory(markdown_directory):
         if path.suffix != ".md":
             continue
-        org_file = convert_markdown_file(path, args.output_directory)
+        org_file = path.relative_to(markdown_directory).with_suffix(".org")
+        org_file.parent.mkdir(parents=True, exist_ok=True)
+        convert_markdown_file(path, args.output_directory / org_file)
         print(f"Converted {path} to {org_file}")
 
 
