@@ -1,6 +1,8 @@
 #!/usr/bin/python
 
+import argparse
 import os
+import pathlib
 import re
 import sys
 
@@ -15,11 +17,20 @@ def replace(pattern, substitution, filename):
     f.close()
 
 
+def make_arg_parser():
+    parser = argparse.ArgumentParser(description="Convert an Obsidian Markdown file into org-mode")
+    parser.add_argument("markdown_file", type=pathlib.Path, help="The Markdown file to convert")
+    return parser
+
+
 def main():
+    parser = make_arg_parser()
+    args = parser.parse_args()
+
     if not os.path.isdir("out/"):
         os.mkdir("out/")
 
-    md_file = sys.argv[1]
+    md_file = str(args.markdown_file)
     org_file = md_file[:-3] + ".org"
 
     # Treat all comments in file
