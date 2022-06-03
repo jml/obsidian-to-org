@@ -14,18 +14,20 @@ def make_arg_parser():
     return parser
 
 
-def convert_markdown_file(md_file, output_dir):
-    org_file = (output_dir / md_file.stem).with_suffix(".org")
-
-    markdown_contents = md_file.read_text()
-
+def prepare_markdown_text(markdown_contents):
     # Treat all comments in file
     obsidian_comment_re = re.compile(r"^%%(.*?)%%", re.MULTILINE)
     markdown_contents = obsidian_comment_re.sub(r"#!#comment: \1", markdown_contents)
 
     # Ensure space after "---"
     ruler_re = re.compile(r"^---\n(.+)", re.MULTILINE)
-    markdown_contents = ruler_re.sub(r"---\n\n\1", markdown_contents)
+    return ruler_re.sub(r"---\n\n\1", markdown_contents)
+
+
+def convert_markdown_file(md_file, output_dir):
+    org_file = (output_dir / md_file.stem).with_suffix(".org")
+
+    markdown_contents = prepare_markdown_text(md_file.read_text())
 
     # Convert from md to org
     with tempfile.NamedTemporaryFile("w+") as fp:
