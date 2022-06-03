@@ -4,12 +4,6 @@ import os
 import re
 import sys
 
-if not os.path.isdir("out/"):
-    os.mkdir("out/")
-
-md_file = sys.argv[1]
-org_file = md_file[:-3] + ".org"
-
 
 def replace(pattern, substitution, filename):
     f = open(filename, "r+")
@@ -20,6 +14,12 @@ def replace(pattern, substitution, filename):
     f.truncate()
     f.close()
 
+
+if not os.path.isdir("out/"):
+    os.mkdir("out/")
+
+md_file = sys.argv[1]
+org_file = md_file[:-3] + ".org"
 
 # Treat all comments in file
 re_comm = re.compile(r"^%%(.*?)%%", re.MULTILINE)
