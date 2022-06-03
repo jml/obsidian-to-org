@@ -125,9 +125,9 @@ def add_node_id(org_file, node_id):
     contents = org_file.read_text()
     tags = ":".join(set(find_tags_in_markdown(contents)))
     with org_file.open("w") as fp:
-        fp.write(":PROPERTIES\n")
+        fp.write(":PROPERTIES:\n")
         fp.write(f":ID: {node_id}\n")
-        fp.write(":END\n")
+        fp.write(":END:\n")
         fp.write(f"+title: {org_file.stem}\n")
         if tags:
             fp.write(f"+filetags: :{tags}:\n")
