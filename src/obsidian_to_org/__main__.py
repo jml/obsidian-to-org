@@ -51,13 +51,13 @@ def convert_markdown_file(md_file, output_dir):
         subprocess.run(
             [
                 "pandoc",
-                "-f",
-                "markdown",
-                fp.name,
+                "--from=markdown",
+                "--to=org",
                 "--lua-filter=remove-header-attr.lua",
                 "--wrap=preserve",
-                "-o",
-                org_file
+                "--output",
+                org_file,
+                fp.name,
             ],
             check=True,
         )
