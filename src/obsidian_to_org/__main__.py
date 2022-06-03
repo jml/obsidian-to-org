@@ -83,6 +83,15 @@ def convert_markdown_file(md_file, output_dir):
     return org_file
 
 
+def walk_directory(path):
+    # From https://stackoverflow.com/questions/6639394/what-is-the-python-way-to-walk-a-directory-tree
+    for p in path.iterdir():
+        if p.is_dir():
+            yield from walk_directory(p)
+            continue
+        yield p.resolve()
+
+
 def single_file():
     parser = argparse.ArgumentParser(description="Convert an Obsidian Markdown file into org-mode")
     parser.add_argument("markdown_file", type=pathlib.Path, help="The Markdown file to convert")
@@ -94,6 +103,22 @@ def single_file():
 
     org_file = convert_markdown_file(md_file, output_dir)
     print(f"Converted {org_file}")
+
+
+def convert_directory():
+    parser = argparse.ArgumentParser(description="Convert a directory of Obsidian markdown files into org-mode")
+    parser.add_argument("markdown_directory", type=pathlib.Path, help="The directory of Markdown files to convert")
+    parser.add_argument("output_directory", type=pathlib.Path, help="The directory to put the org files in")
+    args = parser.parse_args()
+
+    if not args.output_directory.is_dir():
+        args.output_directory.mkdir()
+
+    for path in walk_directory(args.markdown_directory):
+        if path.suffix != ".md":
+            continue
+        org_file = convert_markdown_file(path, args.output_directory)
+        print(f"Converted {path} to {org_file}")
 
 
 if __name__ == "__main__":
