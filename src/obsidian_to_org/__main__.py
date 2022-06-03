@@ -50,32 +50,7 @@ def prepare_markdown_text(markdown_contents):
     return ruler_re.sub(r"---\n\n\1", markdown_contents)
 
 
-def convert_markdown_file(md_file, output_dir):
-    org_file = (output_dir / md_file.stem).with_suffix(".org")
-
-    markdown_contents = prepare_markdown_text(md_file.read_text())
-
-    # Convert from md to org
-    with tempfile.NamedTemporaryFile("w+") as fp:
-        fp.write(markdown_contents)
-        fp.flush()
-        subprocess.run(
-            [
-                "pandoc",
-                "--from=markdown-auto_identifiers",
-                "--to=org",
-                "--wrap=preserve",
-                "--output",
-                org_file,
-                fp.name,
-            ],
-            check=True,
-        )
-
-    org_contents = org_file.read_text()
-
-    org_contents = restore_comments(org_contents)
-
+def fix_links(org_contents):
     # Convert all kinds of links
     url_re = re.compile(r"\[\[(.*?)\]\[(.*?)\]\]")
     link_re = re.compile(r"\[\[(.*?)\]\]")
@@ -106,10 +81,36 @@ def convert_markdown_file(md_file, output_dir):
             )
 
         pos = e
-    new_content = new_content + org_contents[pos:]
 
-    org_file.write_text(new_content)
+    return new_content + org_contents[pos:]
 
+
+def convert_markdown_file(md_file, output_dir):
+    org_file = (output_dir / md_file.stem).with_suffix(".org")
+
+    markdown_contents = prepare_markdown_text(md_file.read_text())
+
+    # Convert from md to org
+    with tempfile.NamedTemporaryFile("w+") as fp:
+        fp.write(markdown_contents)
+        fp.flush()
+        subprocess.run(
+            [
+                "pandoc",
+                "--from=markdown-auto_identifiers",
+                "--to=org",
+                "--wrap=preserve",
+                "--output",
+                org_file,
+                fp.name,
+            ],
+            check=True,
+        )
+
+    org_contents = org_file.read_text()
+    org_contents = restore_comments(org_contents)
+    org_contents = fix_links(org_contents)
+    org_file.write_text(org_contents)
     return org_file
 
 
