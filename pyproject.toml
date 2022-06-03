@@ -6,7 +6,7 @@ authors = ["Jonathan Lange <jml@mumak.net>"]
 readme = "README.md"
 
 [tool.poetry.scripts]
-obsidian-to-org = "obsidian_to_org.__main__:main"
+obsidian-to-org = "obsidian_to_org.__main__:single_file"
 
 [tool.poetry.dependencies]
 python = "^3.10"

@@ -83,7 +83,7 @@ def convert_markdown_file(md_file, output_dir):
     return org_file
 
 
-def main():
+def single_file():
     parser = argparse.ArgumentParser(description="Convert an Obsidian Markdown file into org-mode")
     parser.add_argument("markdown_file", type=pathlib.Path, help="The Markdown file to convert")
     args = parser.parse_args()
