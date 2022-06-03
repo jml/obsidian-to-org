@@ -10,6 +10,13 @@ import uuid
 
 
 COMMENT_MARKER = "#!#comment:"
+RULER_RE = re.compile(r"^---\n(.+)", re.MULTILINE)
+LINK_RE = re.compile(r"\[\[([^|\[]*?)\]\]")
+LINK_DESCRIPTION_RE = re.compile(r"\[\[(.*?)\|(.*?)\]\]")
+
+# For example, [[file:foo.org][The Title is Foo]]
+FILE_LINK_RE = re.compile(r"\[\[file:(.*?)\]\[(.*?)\]\]")
+
 
 def fix_markdown_comments(markdown_contents):
     """Turn Obsidian comments into HTML comments."""
@@ -41,32 +48,24 @@ def prepare_markdown_text(markdown_contents):
     markdown_contents = fix_markdown_comments(markdown_contents)
 
     # Ensure space after "---"
-    ruler_re = re.compile(r"^---\n(.+)", re.MULTILINE)
-    return ruler_re.sub(r"---\n\n\1", markdown_contents)
+    return RULER_RE.sub(r"---\n\n\1", markdown_contents)
 
 
 def fix_links(org_contents):
     """Convert all kinds of links."""
-    # TODO: Move compiled regexes to be constants.
-    link_re = re.compile(r"\[\[([^|\[]*?)\]\]")
-    link_description_re = re.compile(r"\[\[(.*?)\|(.*?)\]\]")
-
-    org_contents = link_re.sub(r"[[file:\1.org][\1]]", org_contents)
-    org_contents = link_description_re.sub(r"[[file:\1.org][\2]]", org_contents)
+    org_contents = LINK_RE.sub(r"[[file:\1.org][\1]]", org_contents)
+    org_contents = LINK_DESCRIPTION_RE.sub(r"[[file:\1.org][\2]]", org_contents)
     return org_contents
 
 
 def convert_file_links_to_id_links(org_contents, nodes):
-    # For example, [[file:foo.org][The Title is Foo]]
-    link_re = re.compile(r"\[\[file:(.*?)\]\[(.*?)\]\]")
-
     def replace_with_id(match):
         node_id = nodes.get(match.group(1))
         if not node_id:
             return match.group(0)
         return f"[[id:{node_id}][{match.group(2)}]]"
 
-    return link_re.sub(replace_with_id, org_contents)
+    return FILE_LINK_RE.sub(replace_with_id, org_contents)
 
 
 def convert_markdown_file(md_file, org_file):
