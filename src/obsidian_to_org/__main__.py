@@ -10,12 +10,6 @@ import tempfile
 
 COMMENT_MARKER = "#!#comment:"
 
-def make_arg_parser():
-    parser = argparse.ArgumentParser(description="Convert an Obsidian Markdown file into org-mode")
-    parser.add_argument("markdown_file", type=pathlib.Path, help="The Markdown file to convert")
-    return parser
-
-
 def fix_markdown_comments(markdown_contents):
     """Turn Obsidian comments into HTML comments."""
     chunks = markdown_contents.split("%%")
@@ -90,7 +84,8 @@ def convert_markdown_file(md_file, output_dir):
 
 
 def main():
-    parser = make_arg_parser()
+    parser = argparse.ArgumentParser(description="Convert an Obsidian Markdown file into org-mode")
+    parser.add_argument("markdown_file", type=pathlib.Path, help="The Markdown file to convert")
     args = parser.parse_args()
 
     output_dir = pathlib.Path("out")
