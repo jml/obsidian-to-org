@@ -8,6 +8,8 @@ import sys
 import tempfile
 
 
+COMMENT_MARKER = "#!#comment:"
+
 def make_arg_parser():
     parser = argparse.ArgumentParser(description="Convert an Obsidian Markdown file into org-mode")
     parser.add_argument("markdown_file", type=pathlib.Path, help="The Markdown file to convert")
@@ -24,11 +26,20 @@ def fix_markdown_comments(markdown_contents):
             output.append(chunk)
             inside_comment = True
         else:
-            output.append("<!--")
-            output.append(chunk)
-            output.append("-->")
+            if "\n" in chunk:
+                lines = chunk.splitlines(True)
+                if len(lines) > 0 and lines[0].strip() == "":
+                    lines = lines[1:]
+                output.extend(f"{COMMENT_MARKER}{line}" for line in lines)
+            else:
+                output.extend(["<!--", chunk, "-->"])
             inside_comment = False
     return "".join(output)
+
+
+def restore_comments(org_contents):
+    """Restore the comments in org format."""
+    return "".join(line.replace(COMMENT_MARKER, "# ") for line in  org_contents.splitlines(True))
 
 
 def prepare_markdown_text(markdown_contents):
@@ -63,9 +74,7 @@ def convert_markdown_file(md_file, output_dir):
 
     org_contents = org_file.read_text()
 
-    # Regularize comments
-    org_comment_re = re.compile(r"^#!#comment:(.*?)$", re.MULTILINE)
-    org_contents = org_comment_re.sub(r"#\1", org_contents)
+    org_contents = restore_comments(org_contents)
 
     # Convert all kinds of links
     url_re = re.compile(r"\[\[(.*?)\]\[(.*?)\]\]")

@@ -41,11 +41,7 @@ def test_convert_markdown_file():
 
     Hello world.
 
-    #+begin_html
-      <!--
-      This is a block comment
-      -->
-    #+end_html
+    # This is a block comment
 
     --------------
 
@@ -61,16 +57,17 @@ def test_convert_markdown_file():
         ("foo", "foo"),
         ("before %%comment%% after", "before <!--comment--> after"),
         (
-            """
+            dedent("""
             %%
             multiline
+            comment
             %%
-            """,
-            """
-            <!--
-            multiline
-            -->
-            """,
+            """),
+            dedent("""
+            #!#comment:multiline
+            #!#comment:comment
+
+            """),
          ),
     ]
 )
