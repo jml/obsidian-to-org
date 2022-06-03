@@ -36,8 +36,7 @@ def convert_markdown_file(md_file, output_dir):
 
     # Convert from md to org
     pandoc_command = (
-        'pandoc -f markdown "{0}" --lua-filter=remove-header-attr.lua'
-        ' --wrap=preserve -o {1}'.format(md_file, org_file)
+        f"pandoc -f markdown \"{md_file}\" --lua-filter=remove-header-attr.lua --wrap=preserve -o {org_file}"
     )
     os.system(pandoc_command)
 
@@ -94,7 +93,7 @@ def main():
         output_dir.mkdir()
 
     org_file = convert_markdown_file(md_file, output_dir)
-    print("Converted " + org_file)
+    print(f"Converted {org_file}")
 
 
 if __name__ == "__main__":
