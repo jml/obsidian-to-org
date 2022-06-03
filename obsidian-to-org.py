@@ -1,6 +1,8 @@
 #!/usr/bin/python
 
-import sys, re, os
+import os
+import re
+import sys
 
 if not os.path.isdir("out/"):
     os.mkdir("out/")
