@@ -14,10 +14,25 @@ def make_arg_parser():
     return parser
 
 
+def fix_markdown_comments(markdown_contents):
+    """Turn Obsidian comments into HTML comments."""
+    chunks = markdown_contents.split("%%")
+    inside_comment = False
+    output = []
+    for i, chunk in enumerate(chunks):
+        if not inside_comment:
+            output.append(chunk)
+            inside_comment = True
+        else:
+            output.append("<!--")
+            output.append(chunk)
+            output.append("-->")
+            inside_comment = False
+    return "".join(output)
+
+
 def prepare_markdown_text(markdown_contents):
-    # Treat all comments in file
-    obsidian_comment_re = re.compile(r"^%%(.*?)%%", re.MULTILINE)
-    markdown_contents = obsidian_comment_re.sub(r"#!#comment: \1", markdown_contents)
+    markdown_contents = fix_markdown_comments(markdown_contents)
 
     # Ensure space after "---"
     ruler_re = re.compile(r"^---\n(.+)", re.MULTILINE)

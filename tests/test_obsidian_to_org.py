@@ -6,7 +6,7 @@ from textwrap import dedent
 
 import pytest
 
-from obsidian_to_org.__main__ import convert_markdown_file
+from obsidian_to_org.__main__ import convert_markdown_file, fix_markdown_comments
 
 
 def convert_file(markdown_contents):
@@ -37,9 +37,11 @@ def test_convert_markdown_file():
     * Title
     This is a paragraph.
 
-    %%
-    This is a comment
-    %%
+    #+begin_html
+      <!--
+      This is a comment
+      -->
+    #+end_html
 
     --------------
 
@@ -47,3 +49,27 @@ def test_convert_markdown_file():
     """)
     org = convert_file(markdown)
     assert org == expected
+
+
+@pytest.mark.parametrize(
+    "input_text,expected",
+    [
+        ("foo", "foo"),
+        ("before %%comment%% after", "before <!--comment--> after"),
+        (
+            """
+            %%
+            multiline
+            %%
+            """,
+            """
+            <!--
+            multiline
+            -->
+            """,
+         ),
+    ]
+)
+def test_fix_markown_comments(input_text, expected):
+    assert expected == fix_markdown_comments(input_text)
+
