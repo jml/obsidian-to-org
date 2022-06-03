@@ -5,16 +5,7 @@ import os
 import pathlib
 import re
 import sys
-
-
-def replace(pattern, substitution, filename):
-    f = open(filename, "r+")
-    content = f.read()
-    content = re.sub(pattern, substitution, content)
-    f.seek(0)
-    f.write(content)
-    f.truncate()
-    f.close()
+import tempfile
 
 
 def make_arg_parser():
@@ -26,60 +17,64 @@ def make_arg_parser():
 def convert_markdown_file(md_file, output_dir):
     org_file = (output_dir / md_file.stem).with_suffix(".org")
 
+    markdown_contents = md_file.read_text()
+
     # Treat all comments in file
     obsidian_comment_re = re.compile(r"^%%(.*?)%%", re.MULTILINE)
-    replace(obsidian_comment_re, r"#!#comment: \1", md_file)
+    markdown_contents = obsidian_comment_re.sub(r"#!#comment: \1", markdown_contents)
 
     # Ensure space after "---"
     ruler_re = re.compile(r"^---\n(.+)", re.MULTILINE)
-    replace(ruler_re, r"---\n\n\1", md_file)
+    markdown_contents = ruler_re.sub(r"---\n\n\1", markdown_contents)
 
     # Convert from md to org
-    pandoc_command = (
-        f"pandoc -f markdown \"{md_file}\" --lua-filter=remove-header-attr.lua --wrap=preserve -o {org_file}"
-    )
-    os.system(pandoc_command)
+    with tempfile.NamedTemporaryFile("w+") as fp:
+        fp.write(markdown_contents)
+        fp.flush()
+        pandoc_command = (
+            f"pandoc -f markdown \"{fp.name}\" --lua-filter=remove-header-attr.lua --wrap=preserve -o {org_file}"
+        )
+        os.system(pandoc_command)
+
+    org_contents = org_file.read_text()
 
     # Regularize comments
     org_comment_re = re.compile(r"^#!#comment:(.*?)$", re.MULTILINE)
-    replace(org_comment_re, r"#\1", org_file)
+    org_contents = org_comment_re.sub(r"#\1", org_contents)
 
     # Convert all kinds of links
     url_re = re.compile(r"\[\[(.*?)\]\[(.*?)\]\]")
     link_re = re.compile(r"\[\[(.*?)\]\]")
     link_description_re = re.compile(r"\[\[(.*?)\|(.*?)\]\]")
 
-    with open(org_file, "r+") as f:
-        content = f.read()
-        new_content = ""
-        matches = re.finditer(r"\[\[.*?\]\]", content)
-        pos = 0
-        for m in matches:
-            s = m.start()
-            e = m.end()
-            m_string = m.group(0)
-            if "://" in m_string:
-                new_content = (
-                    new_content + content[pos:s] + re.sub(url_re, r"[[\1][\2]]", m_string)
-                )
-            elif "|" in m_string:
-                new_content = (
-                    new_content
-                    + content[pos:s]
-                    + re.sub(link_description_re, r"[[file:\1.org][\2]]", m_string)
-                )
-            else:
-                new_content = (
-                    new_content
-                    + content[pos:s]
-                    + re.sub(link_re, r"[[file:\1.org][\1]]", m_string)
-                )
+    new_content = ""
+    matches = re.finditer(r"\[\[.*?\]\]", org_contents)
+    pos = 0
+    for m in matches:
+        s = m.start()
+        e = m.end()
+        m_string = m.group(0)
+        if "://" in m_string:
+            new_content = (
+                new_content + org_contents[pos:s] + re.sub(url_re, r"[[\1][\2]]", m_string)
+            )
+        elif "|" in m_string:
+            new_content = (
+                new_content
+                + org_contents[pos:s]
+                + re.sub(link_description_re, r"[[file:\1.org][\2]]", m_string)
+            )
+        else:
+            new_content = (
+                new_content
+                + org_contents[pos:s]
+                + re.sub(link_re, r"[[file:\1.org][\1]]", m_string)
+            )
 
-            pos = e
-        new_content = new_content + content[pos:]
-        f.seek(0)
-        f.write(new_content)
-        f.truncate()
+        pos = e
+    new_content = new_content + org_contents[pos:]
+
+    org_file.write_text(new_content)
 
     return org_file
 
