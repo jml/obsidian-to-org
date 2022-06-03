@@ -23,16 +23,7 @@ def make_arg_parser():
     return parser
 
 
-def main():
-    parser = make_arg_parser()
-    args = parser.parse_args()
-
-    output_dir = "out/"
-
-    if not os.path.isdir(output_dir):
-        os.mkdir(output_dir)
-
-    md_file = str(args.markdown_file)
+def convert_markdown_file(md_file, output_dir):
     org_file = md_file[:-3] + ".org"
 
     # Treat all comments in file
@@ -91,6 +82,20 @@ def main():
         f.write(new_content)
         f.truncate()
 
+    return org_file
+
+
+def main():
+    parser = make_arg_parser()
+    args = parser.parse_args()
+
+    output_dir = "out/"
+
+    if not os.path.isdir(output_dir):
+        os.mkdir(output_dir)
+
+    md_file = str(args.markdown_file)
+    org_file = convert_markdown_file(md_file, output_dir)
     print("Converted " + org_file)
 
 
