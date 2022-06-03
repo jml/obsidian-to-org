@@ -6,6 +6,7 @@ import re
 import subprocess
 import sys
 import tempfile
+import uuid
 
 
 COMMENT_MARKER = "#!#comment:"
@@ -103,6 +104,16 @@ def single_file():
     print(f"Converted {md_file} to {org_file}")
 
 
+def add_node_id(org_file, node_id):
+    contents = org_file.read_text()
+    with org_file.open("w") as fp:
+        fp.write(":PROPERTIES\n")
+        fp.write(f":ID: {str(node_id).upper()}\n")
+        fp.write(":END\n")
+        fp.write(f"+title: {org_file.stem}\n\n")
+        fp.write(contents)
+
+
 def convert_directory():
     parser = argparse.ArgumentParser(description="Convert a directory of Obsidian markdown files into org-mode")
     parser.add_argument("markdown_directory", type=pathlib.Path, help="The directory of Markdown files to convert")
@@ -114,13 +125,18 @@ def convert_directory():
     if not args.output_directory.is_dir():
         args.output_directory.mkdir()
 
+    nodes = {}
+
     for path in walk_directory(markdown_directory):
         if path.suffix != ".md":
             continue
-        org_file = path.relative_to(markdown_directory).with_suffix(".org")
-        org_file.parent.mkdir(parents=True, exist_ok=True)
-        convert_markdown_file(path, args.output_directory / org_file)
-        print(f"Converted {path} to {org_file}")
+        org_filename = path.relative_to(markdown_directory).with_suffix(".org")
+        org_path = args.output_directory / org_filename
+        org_path.parent.mkdir(parents=True, exist_ok=True)
+        convert_markdown_file(path, org_path)
+        nodes[org_filename] = node_id = uuid.uuid4()
+        add_node_id(org_path, node_id)
+        print(f"Converted {path} to {org_filename}")
 
 
 if __name__ == "__main__":
