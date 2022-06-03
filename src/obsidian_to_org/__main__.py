@@ -56,6 +56,19 @@ def fix_links(org_contents):
     return org_contents
 
 
+def convert_file_links_to_id_links(org_contents, nodes):
+    # For example, [[file:foo.org][The Title is Foo]]
+    link_re = re.compile(r"\[\[file:(.*?)\]\[(.*?)\]\]")
+
+    def replace_with_id(match):
+        node_id = nodes.get(match.group(1))
+        if not node_id:
+            return match.group(0)
+        return f"[[id:{node_id}][{match.group(2)}]]"
+
+    return link_re.sub(replace_with_id, org_contents)
+
+
 def convert_markdown_file(md_file, org_file):
     markdown_contents = prepare_markdown_text(md_file.read_text())
 
@@ -110,7 +123,7 @@ def add_node_id(org_file, node_id):
     contents = org_file.read_text()
     with org_file.open("w") as fp:
         fp.write(":PROPERTIES\n")
-        fp.write(f":ID: {str(node_id).upper()}\n")
+        fp.write(f":ID: {node_id}\n")
         fp.write(":END\n")
         fp.write(f"+title: {org_file.stem}\n\n")
         fp.write(contents)
@@ -136,11 +149,15 @@ def convert_directory():
         org_path = args.output_directory / org_filename
         org_path.parent.mkdir(parents=True, exist_ok=True)
         convert_markdown_file(path, org_path)
-        nodes[org_filename] = node_id = uuid.uuid4()
+        nodes[str(org_filename)] = node_id = str(uuid.uuid4()).upper()
         add_node_id(org_path, node_id)
         print(f"Converted {path} to {org_filename}")
 
-    # TODO: Change links to use IDs
+    for org_path in walk_directory(args.output_directory):
+        contents = org_path.read_text()
+        org_path.write_text(convert_file_links_to_id_links(contents, nodes))
+        print(f"Converted links in {org_path}")
+
     # TODO: What about tags (e.g. #literature). See https://www.orgroam.com/manual.html#Tags
 
 
