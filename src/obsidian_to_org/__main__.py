@@ -63,7 +63,7 @@ def fix_links(org_contents):
 
 def convert_file_links_to_id_links(org_contents, nodes):
     def replace_with_id(match):
-        node_id = nodes.get(match.group(1))
+        node_id = nodes.get(pathlib.Path(match.group(1)).stem)
         if not node_id:
             return match.group(0)
         return f"[[id:{node_id}][{match.group(2)}]]"
@@ -158,7 +158,7 @@ def convert_directory():
         org_path = args.output_directory / org_filename
         org_path.parent.mkdir(parents=True, exist_ok=True)
         convert_markdown_file(path, org_path)
-        nodes[str(org_filename)] = node_id = str(uuid.uuid4()).upper()
+        nodes[org_filename.stem] = node_id = str(uuid.uuid4()).upper()
         add_node_id(org_path, node_id)
         print(f"Converted {path} to {org_filename}")
 
