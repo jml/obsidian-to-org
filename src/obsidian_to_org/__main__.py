@@ -1,9 +1,9 @@
 #!/usr/bin/python
 
 import argparse
-import os
 import pathlib
 import re
+import subprocess
 import sys
 import tempfile
 
@@ -48,10 +48,19 @@ def convert_markdown_file(md_file, output_dir):
     with tempfile.NamedTemporaryFile("w+") as fp:
         fp.write(markdown_contents)
         fp.flush()
-        pandoc_command = (
-            f"pandoc -f markdown \"{fp.name}\" --lua-filter=remove-header-attr.lua --wrap=preserve -o {org_file}"
+        subprocess.run(
+            [
+                "pandoc",
+                "-f",
+                "markdown",
+                fp.name,
+                "--lua-filter=remove-header-attr.lua",
+                "--wrap=preserve",
+                "-o",
+                org_file
+            ],
+            check=True,
         )
-        os.system(pandoc_command)
 
     org_contents = org_file.read_text()
 
