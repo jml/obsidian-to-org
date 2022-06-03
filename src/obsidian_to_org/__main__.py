@@ -46,7 +46,8 @@ def prepare_markdown_text(markdown_contents):
 
 
 def fix_links(org_contents):
-    # Convert all kinds of links
+    """Convert all kinds of links."""
+    # TODO: Move compiled regexes to be constants.
     link_re = re.compile(r"\[\[([^|\[]*?)\]\]")
     link_description_re = re.compile(r"\[\[(.*?)\|(.*?)\]\]")
 
@@ -95,6 +96,7 @@ def single_file():
     parser.add_argument("markdown_file", type=pathlib.Path, help="The Markdown file to convert")
     args = parser.parse_args()
 
+    # TODO: Make this an argument.
     output_dir = pathlib.Path("out")
     if not output_dir.is_dir():
         output_dir.mkdir()
@@ -137,6 +139,9 @@ def convert_directory():
         nodes[org_filename] = node_id = uuid.uuid4()
         add_node_id(org_path, node_id)
         print(f"Converted {path} to {org_filename}")
+
+    # TODO: Change links to use IDs
+    # TODO: What about tags (e.g. #literature). See https://www.orgroam.com/manual.html#Tags
 
 
 if __name__ == "__main__":
