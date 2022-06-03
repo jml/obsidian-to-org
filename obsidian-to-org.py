@@ -24,7 +24,7 @@ def make_arg_parser():
 
 
 def convert_markdown_file(md_file, output_dir):
-    org_file = md_file[:-3] + ".org"
+    org_file = (output_dir / md_file.stem).with_suffix(".org")
 
     # Treat all comments in file
     re_comm = re.compile(r"^%%(.*?)%%", re.MULTILINE)
@@ -37,20 +37,20 @@ def convert_markdown_file(md_file, output_dir):
     # Convert from md to org
     pandoc_command = (
         'pandoc -f markdown "{0}" --lua-filter=remove-header-attr.lua'
-        ' --wrap=preserve -o {1}"{2}"'.format(md_file, output_dir, org_file)
+        ' --wrap=preserve -o {1}'.format(md_file, org_file)
     )
     os.system(pandoc_command)
 
     # Regularize comments
     re_comm_org = re.compile(r"^#!#comment:(.*?)$", re.MULTILINE)
-    replace(re_comm_org, r"#\1", output_dir + org_file)
+    replace(re_comm_org, r"#\1", org_file)
 
     # Convert all kinds of links
     re_url = re.compile(r"\[\[(.*?)\]\[(.*?)\]\]")
     re_link = re.compile(r"\[\[(.*?)\]\]")
     re_link_description = re.compile(r"\[\[(.*?)\|(.*?)\]\]")
 
-    with open(output_dir + org_file, "r+") as f:
+    with open(org_file, "r+") as f:
         content = f.read()
         new_content = ""
         matches = re.finditer(r"\[\[.*?\]\]", content)
@@ -89,12 +89,10 @@ def main():
     parser = make_arg_parser()
     args = parser.parse_args()
 
-    output_dir = "out/"
+    output_dir = pathlib.Path("out")
+    if not output_dir.is_dir():
+        output_dir.mkdir()
 
-    if not os.path.isdir(output_dir):
-        os.mkdir(output_dir)
-
-    md_file = str(args.markdown_file)
     org_file = convert_markdown_file(md_file, output_dir)
     print("Converted " + org_file)
 
