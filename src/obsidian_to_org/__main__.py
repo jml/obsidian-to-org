@@ -52,37 +52,12 @@ def prepare_markdown_text(markdown_contents):
 
 def fix_links(org_contents):
     # Convert all kinds of links
-    url_re = re.compile(r"\[\[(.*?)\]\[(.*?)\]\]")
-    link_re = re.compile(r"\[\[(.*?)\]\]")
+    link_re = re.compile(r"\[\[([^|\[]*?)\]\]")
     link_description_re = re.compile(r"\[\[(.*?)\|(.*?)\]\]")
 
-    new_content = ""
-    matches = re.finditer(r"\[\[.*?\]\]", org_contents)
-    pos = 0
-    for m in matches:
-        s = m.start()
-        e = m.end()
-        m_string = m.group(0)
-        if "://" in m_string:
-            new_content = (
-                new_content + org_contents[pos:s] + re.sub(url_re, r"[[\1][\2]]", m_string)
-            )
-        elif "|" in m_string:
-            new_content = (
-                new_content
-                + org_contents[pos:s]
-                + re.sub(link_description_re, r"[[file:\1.org][\2]]", m_string)
-            )
-        else:
-            new_content = (
-                new_content
-                + org_contents[pos:s]
-                + re.sub(link_re, r"[[file:\1.org][\1]]", m_string)
-            )
-
-        pos = e
-
-    return new_content + org_contents[pos:]
+    org_contents = link_re.sub(r"[[file:\1.org][\1]]", org_contents)
+    org_contents = link_description_re.sub(r"[[file:\1.org][\2]]", org_contents)
+    return org_contents
 
 
 def convert_markdown_file(md_file, output_dir):
