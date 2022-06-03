@@ -26,8 +26,10 @@ def test_convert_markdown_file():
 
     This is a paragraph.
 
+    Hello <!-- inline comment --> world.
+
     %%
-    This is a comment
+    This is a block comment
     %%
 
     ---
@@ -37,9 +39,11 @@ def test_convert_markdown_file():
     * Title
     This is a paragraph.
 
+    Hello world.
+
     #+begin_html
       <!--
-      This is a comment
+      This is a block comment
       -->
     #+end_html
 
