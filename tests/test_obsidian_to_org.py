@@ -6,7 +6,7 @@ from textwrap import dedent
 
 import pytest
 
-from obsidian_to_org.__main__ import convert_markdown_file, fix_markdown_comments
+from obsidian_to_org.__main__ import convert_markdown_file, fix_links, fix_markdown_comments
 
 
 def convert_file(markdown_contents):
@@ -74,3 +74,31 @@ def test_convert_markdown_file():
 def test_fix_markown_comments(input_text, expected):
     assert expected == fix_markdown_comments(input_text)
 
+
+@pytest.mark.parametrize(
+    "input_text,expected",
+    [
+        ("foo", "foo"),
+        ("[[This is a file]]", "[[file:This is a file.org][This is a file]]"),
+        ("[[This is a file|This is a description]]", "[[file:This is a file.org][This is a description]]"),
+        ("[[http://example.com][This is an example]]", "[[http://example.com][This is an example]]"),
+        (
+            dedent(
+                """
+                [[This is a file]]
+                [[This is a file|This is a description]]
+                [[http://example.com][This is an example]]
+                """
+            ),
+            dedent(
+                """
+                [[file:This is a file.org][This is a file]]
+                [[file:This is a file.org][This is a description]]
+                [[http://example.com][This is an example]]
+                """
+            ),
+        ),
+    ]
+)
+def test_fix_links(input_text, expected):
+    assert expected == fix_links(input_text)
