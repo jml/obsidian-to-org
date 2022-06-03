@@ -14,6 +14,9 @@ RULER_RE = re.compile(r"^---\n(.+)", re.MULTILINE)
 LINK_RE = re.compile(r"\[\[([^|\[]*?)\]\]")
 LINK_DESCRIPTION_RE = re.compile(r"\[\[(.*?)\|(.*?)\]\]")
 
+# See https://help.obsidian.md/How+to/Working+with+tags#Allowed+characters
+TAGS_RE = re.compile(r"#([A-Za-z][A-Za-z0-9/_-]*)")
+
 # For example, [[file:foo.org][The Title is Foo]]
 FILE_LINK_RE = re.compile(r"\[\[file:(.*?)\]\[(.*?)\]\]")
 
@@ -120,12 +123,19 @@ def single_file():
 
 def add_node_id(org_file, node_id):
     contents = org_file.read_text()
+    tags = ":".join(set(find_tags_in_markdown(contents)))
     with org_file.open("w") as fp:
         fp.write(":PROPERTIES\n")
         fp.write(f":ID: {node_id}\n")
         fp.write(":END\n")
-        fp.write(f"+title: {org_file.stem}\n\n")
+        fp.write(f"+title: {org_file.stem}\n")
+        fp.write(f"+filetags: :{tags}:\n")
+        fp.write("\n")
         fp.write(contents)
+
+
+def find_tags_in_markdown(contents):
+    return TAGS_RE.findall(contents)
 
 
 def convert_directory():
