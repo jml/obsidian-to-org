@@ -128,9 +128,9 @@ def add_node_id(org_file, node_id):
         fp.write(":PROPERTIES:\n")
         fp.write(f":ID: {node_id}\n")
         fp.write(":END:\n")
-        fp.write(f"+title: {org_file.stem}\n")
+        fp.write(f"#+title: {org_file.stem}\n")
         if tags:
-            fp.write(f"+filetags: :{tags}:\n")
+            fp.write(f"#+filetags: :{tags}:\n")
         fp.write("\n")
         fp.write(contents)
 
