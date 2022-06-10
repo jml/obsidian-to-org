@@ -2,6 +2,7 @@
 name = "obsidian-to-org"
 version = "0.1.0"
 description = "Convert Obsidian Markdown files to org-roam"
+license = "GPL-3"
 authors = ["Jonathan Lange <jml@mumak.net>"]
 readme = "README.md"
 
