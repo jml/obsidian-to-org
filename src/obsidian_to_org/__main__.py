@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python3
 
 import argparse
 import pathlib
@@ -7,6 +7,7 @@ import subprocess
 import sys
 import tempfile
 import uuid
+import shutil
 
 
 COMMENT_MARKER = "#!#comment:"
@@ -44,7 +45,9 @@ def fix_markdown_comments(markdown_contents):
 
 def restore_comments(org_contents):
     """Restore the comments in org format."""
-    return "".join(line.replace(COMMENT_MARKER, "# ") for line in  org_contents.splitlines(True))
+    return "".join(
+        line.replace(COMMENT_MARKER, "# ") for line in org_contents.splitlines(True)
+    )
 
 
 def prepare_markdown_text(markdown_contents):
@@ -107,8 +110,12 @@ def walk_directory(path):
 
 
 def single_file():
-    parser = argparse.ArgumentParser(description="Convert an Obsidian Markdown file into org-mode")
-    parser.add_argument("markdown_file", type=pathlib.Path, help="The Markdown file to convert")
+    parser = argparse.ArgumentParser(
+        description="Convert an Obsidian Markdown file into org-mode"
+    )
+    parser.add_argument(
+        "markdown_file", type=pathlib.Path, help="The Markdown file to convert"
+    )
     args = parser.parse_args()
 
     # TODO: Make this an argument.
@@ -140,9 +147,19 @@ def find_tags_in_markdown(contents):
 
 
 def convert_directory():
-    parser = argparse.ArgumentParser(description="Convert a directory of Obsidian markdown files into org-mode")
-    parser.add_argument("markdown_directory", type=pathlib.Path, help="The directory of Markdown files to convert")
-    parser.add_argument("output_directory", type=pathlib.Path, help="The directory to put the org files in")
+    parser = argparse.ArgumentParser(
+        description="Convert a directory of Obsidian markdown files into org-mode"
+    )
+    parser.add_argument(
+        "markdown_directory",
+        type=pathlib.Path,
+        help="The directory of Markdown files to convert",
+    )
+    parser.add_argument(
+        "output_directory",
+        type=pathlib.Path,
+        help="The directory to put the org files in",
+    )
     args = parser.parse_args()
 
     markdown_directory = args.markdown_directory.resolve()
@@ -154,6 +171,10 @@ def convert_directory():
 
     for path in walk_directory(markdown_directory):
         if path.suffix != ".md":
+            copy_to = path.relative_to(markdown_directory)
+            print(f"Copying from {path} to {copy_to}")
+            copy_to.parent.mkdir(parents=True, exist_ok=True)
+            shutil.copy(str(path), str(copy_to))
             continue
         org_filename = path.relative_to(markdown_directory).with_suffix(".org")
         org_path = args.output_directory / org_filename
@@ -172,4 +193,4 @@ def convert_directory():
 
 
 if __name__ == "__main__":
-    main()
+    convert_directory()
