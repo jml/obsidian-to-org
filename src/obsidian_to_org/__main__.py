@@ -172,9 +172,10 @@ def convert_directory():
     for path in walk_directory(markdown_directory):
         if path.suffix != ".md":
             copy_to = path.relative_to(markdown_directory)
-            print(f"Copying from {path} to {copy_to}")
-            copy_to.parent.mkdir(parents=True, exist_ok=True)
-            shutil.copy(str(path), str(copy_to))
+            copy_path = args.output_directory / copy_to
+            print(f"Copying from {path} to {copy_path}")
+            copy_path.parent.mkdir(parents=True, exist_ok=True)
+            shutil.copy(str(path), str(copy_path))
             continue
         org_filename = path.relative_to(markdown_directory).with_suffix(".org")
         org_path = args.output_directory / org_filename
