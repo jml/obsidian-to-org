@@ -12,11 +12,11 @@ import shutil
 
 COMMENT_MARKER = "#!#comment:"
 RULER_RE = re.compile(r"^---\n(.+)", re.MULTILINE)
-LINK_RE = re.compile(r"\[\[([^|\[]*?)\]\]")
+LINK_RE = re.compile(r"\[\[([^|\\/:#*^\[\]]*?)\]\]")
 LINK_DESCRIPTION_RE = re.compile(r"\[\[(.*?)\|(.*?)\]\]")
 
 # See https://help.obsidian.md/How+to/Working+with+tags#Allowed+characters
-TAGS_RE = re.compile(r"#([A-Za-z][A-Za-z0-9/_-]*)")
+TAGS_RE = re.compile(r"#([A-Za-z\u4e00-\u9fa5][A-Za-z0-9\u4e00-\u9fa5/_-]*)")
 
 # For example, [[file:foo.org][The Title is Foo]]
 FILE_LINK_RE = re.compile(r"\[\[file:(.*?)\]\[(.*?)\]\]")
