@@ -170,6 +170,9 @@ def convert_directory():
     nodes = {}
 
     for path in walk_directory(markdown_directory):
+        if path.name == ".DS_Store":
+            continue
+
         if path.suffix != ".md":
             copy_to = path.relative_to(markdown_directory)
             copy_path = args.output_directory / copy_to
@@ -186,6 +189,9 @@ def convert_directory():
         print(f"Converted {path} to {org_filename}")
 
     for org_path in walk_directory(args.output_directory):
+        if org_path.name == ".DS_Store" or org_path.suffix != ".org":
+            continue
+
         contents = org_path.read_text()
         org_path.write_text(convert_file_links_to_id_links(contents, nodes))
         print(f"Converted links in {org_path}")
